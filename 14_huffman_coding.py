@@ -1,80 +1,75 @@
-
+# Huffman Coding for Lossless Grayscale Image Compression
+import heapq
 from PIL import Image
 import matplotlib.pyplot as plt
 import numpy as np
-from numpy.lib.stride_tricks import sliding_window_view
-import scipy.ndimage
-from pathlib import Path
+import skimage.data
 
 IMAGE_FILE = "images/sample_cat.png"
 
-def rgb_to_hsi(rgb):
-    r, g, b = rgb[..., 0], rgb[..., 1], rgb[..., 2]
-    den = np.sqrt((r-g)**2 + (r-b)*(g-b)) + 1e-8
-    theta = np.arccos(np.clip(0.5*((r-g)+(r-b))/den, -1.0, 1.0))
-    h = np.where(b <= g, theta, 2*np.pi-theta)/(2*np.pi)
-    s = np.where(r+g+b < 1e-6, 0.0, 1.0-3*np.minimum(np.minimum(r,g),b)/(r+g+b+1e-8))
-    return np.stack([h,s,(r+g+b)/3], axis=-1)
-
-def hsi_to_rgb(hsi):
-    h,s,i = hsi[...,0]*2*np.pi, hsi[...,1], hsi[...,2]
-    sec=np.clip((h//(2*np.pi/3)).astype(int),0,2)
-    ha=h-sec*(2*np.pi/3)
-    c3=i*(1-s)
-    c1=i*(1+s*np.cos(ha)/(np.cos(np.pi/3-ha)+1e-8))
-    c2=3*i-(c1+c3)
-    r=np.select([sec==0,sec==1,sec==2],[c1,c3,c2])
-    g=np.select([sec==0,sec==1,sec==2],[c2,c1,c3])
-    b=np.select([sec==0,sec==1,sec==2],[c3,c2,c1])
-    return np.clip(np.stack([r,g,b],axis=-1),0,1)
-
-def load_image(gray=False):
-    im=Image.open(IMAGE_FILE).convert("L" if gray else "RGB").resize((256,256))
-    a=np.asarray(im)
-    return a.astype(float)/(255 if a.ndim==2 else 255)
-
-def save_panels(name, plots, size=(10,6.5)):
-    fig,axes=plt.subplots(2,3,figsize=size)
-    for ax,(im,title,cm) in zip(axes.flat,plots):
-        ax.imshow(im,cmap=cm)
-        ax.set_title(title,fontsize=9)
-        ax.axis("off")
-    plt.tight_layout()
-    Path("outputs").mkdir(exist_ok=True)
-    plt.savefig(f"outputs/{name}.png",dpi=140)
-    plt.close(fig)
-
-# Huffman Coding for Lossless Grayscale Image Compression
-import heapq
 def build_huffman(counts):
-    heap=[[freq,[[sym,""]]] for sym,freq in counts.items()]
+    # build variable-length prefix codes from symbol frequencies
+    heap = [[freq, [sym, ""]] for sym, freq in counts.items()]
     heapq.heapify(heap)
-    if len(heap)==1: return {heap[0][1][0][0]:"0"}
-    while len(heap)>1:
-        lo=heapq.heappop(heap); hi=heapq.heappop(heap)
-        for pair in lo[1]: pair[1]="0"+pair[1]
-        for pair in hi[1]: pair[1]="1"+pair[1]
-        heapq.heappush(heap,[lo[0]+hi[0],lo[1]+hi[1]])
-    return {s:c for s,c in heap[0][1]}
-def decode_huffman(bits,codes):
-    rev={c:s for s,c in codes.items()}; out=[]; buf=""
+    if len(heap) == 1:
+        return {heap[0][1][0]: "0"}
+    while len(heap) > 1:
+        lo = heapq.heappop(heap)
+        hi = heapq.heappop(heap)
+        for pair in lo[1:]:
+            pair[1] = "0" + pair[1]
+        for pair in hi[1:]:
+            pair[1] = "1" + pair[1]
+        heapq.heappush(heap, [lo[0] + hi[0]] + lo[1:] + hi[1:])
+    return dict(sorted(heap[0][1:], key=lambda x: (len(x[1]), x[0])))
+
+def decode_huffman(bits, codes):
+    # decode binary bitstream using prefix lookup table
+    rev = {code: sym for sym, code in codes.items()}
+    out, buf = [], ""
     for b in bits:
-        buf+=b
-        if buf in rev: out.append(rev[buf]); buf=""
+        buf += b
+        if buf in rev:
+            out.append(rev[buf])
+            buf = ""
     return out
-raw=load_image(gray=True)
-img=np.asarray(np.round(raw*255),dtype=np.uint8)
-vals,cnts=np.unique(img,return_counts=True)
-codes=build_huffman({int(v):int(c) for v,c in zip(vals,cnts)})
-bits="".join(codes[int(px)] for px in img.ravel())
-rec=np.asarray(decode_huffman(bits,codes),dtype=np.uint8).reshape(img.shape)
-probs=cnts/cnts.sum()
-print("Raw bits:",img.size*8,"Encoded bits:",len(bits),"Compression ratio:",round(img.size*8/len(bits),3))
-print("Lossless reconstruction:",np.array_equal(img,rec))
-fig,axes=plt.subplots(2,2,figsize=(9,6))
-axes[0,0].imshow(img,cmap="gray"); axes[0,0].set_title("Original grayscale")
-axes[0,1].imshow(rec,cmap="gray"); axes[0,1].set_title("Huffman decoded (lossless)")
-axes[1,0].bar(vals,probs,width=1); axes[1,0].set_title("Gray-level probability distribution")
-axes[1,1].bar(vals,[len(codes[int(v)]) for v in vals],width=1); axes[1,1].set_title("Huffman code lengths")
-for ax in axes.flat: ax.axis("off") if ax in (axes[0,0],axes[0,1]) else None
-plt.tight_layout(); plt.savefig("outputs/14_huffman_coding.png",dpi=140); plt.close(fig)
+
+# verify Huffman code length and lossless decode on 6-symbol example
+ex_p = {"a1": 0.10, "a2": 0.40, "a3": 0.06, "a4": 0.10, "a5": 0.04, "a6": 0.30}
+ex_codes = build_huffman(ex_p)
+ex_avg = sum(ex_p[k] * len(ex_codes[k]) for k in ex_p)
+ex_msg = ["a2", "a6", "a1", "a4", "a3", "a5"]
+ex_dec = decode_huffman("".join(ex_codes[s] for s in ex_msg), ex_codes)
+print("Huffman Coding (6-Symbol Verification)")
+print(f"Avg length: {ex_avg:.4f} | Expected: 2.2000 | Entropy: {-sum(p * np.log2(p) for p in ex_p.values()):.4f}")
+print(f"Sample decode lossless: {ex_dec == ex_msg}")
+
+# load 256x256 grayscale image and encode pixel intensities
+raw = Image.open(IMAGE_FILE).convert("L") if IMAGE_FILE else Image.fromarray(skimage.data.astronaut()).convert("L")
+img = np.asarray(raw.resize((256, 256)), dtype=np.uint8)
+vals, cnts = np.unique(img, return_counts=True)
+probs = cnts / img.size
+codes = build_huffman({int(v): int(c) for v, c in zip(vals, cnts)})
+bits = "".join(codes[int(px)] for px in img.ravel())
+rec = np.array(decode_huffman(bits, codes), dtype=np.uint8).reshape(img.shape)
+ent = float(-np.sum(probs * np.log2(probs)))
+print(f"\nImage Compression (256x256, 8-bit grayscale)")
+print(f"Raw: {img.size * 8} bits | Compressed: {len(bits)} bits | Ratio: {img.size * 8 / len(bits):.3f}x")
+print(f"Avg bpp: {len(bits) / img.size:.4f} | Entropy: {ent:.4f} | Lossless: {np.array_equal(img, rec)}")
+# display original, decoded image, probability histogram, and code lengths
+fig, axes = plt.subplots(2, 2, figsize=(9, 6.5))
+for ax, im, t in [(axes[0, 0], img, "Original Grayscale (8.00 bpp)"),
+                  (axes[0, 1], rec, f"Huffman Decoded ({len(bits) / img.size:.2f} bpp)")]:
+    ax.imshow(im, cmap="gray")
+    ax.set_title(t, fontsize=9)
+    ax.axis("off")
+axes[1, 0].bar(vals, probs, width=1.0, color="steelblue")
+axes[1, 0].set_title("Gray-Level Probability Distribution", fontsize=9)
+axes[1, 1].bar(vals, [len(codes[int(v)]) for v in vals], width=1.0, color="darkorange")
+axes[1, 1].set_title("Huffman Codeword Length (bits)", fontsize=9)
+plt.tight_layout()
+plt.savefig("outputs/14_huffman_coding.jpg", dpi=150)
+try:
+    plt.show()
+except Exception:
+    print("Plot saved as output.png")
