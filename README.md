@@ -126,7 +126,3 @@ Lossless arithmetic coding of 4-bit quantized grayscale blocks.
 13. Gaussian High-Pass Filter — `13_gaussian_high_pass_filter.py`
 14. Huffman Coding — `14_huffman_coding.py`
 15. Arithmetic Coding — `15_arithmetic_coding.py`
-
-## Credits
-
-The practical topics and original algorithmic implementations are based on the public reference repository [Shivam220403/DIP](https://github.com/Shivam220403/DIP). This repository is a separate study copy with a different sample image and generated visual outputs.
