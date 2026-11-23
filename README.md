@@ -23,91 +23,91 @@ Run each numbered Python file from the repository root. Outputs are saved automa
 
 Spatial smoothing using a uniform averaging kernel.
 
-![3x3 Mean Filter](outputs/01_mean_filter.png)
+![3x3 Mean Filter](outputs/01_mean_filter.jpg)
 
 ### 02. 3x3 Weighted Average Filter
 
 Spatial smoothing with greater weight at the center pixel.
 
-![3x3 Weighted Average Filter](outputs/02_weighted_average_filter.png)
+![3x3 Weighted Average Filter](outputs/02_weighted_average_filter.jpg)
 
 ### 03. 5x5 Gaussian Spatial Filter
 
 Gaussian smoothing with sigma = 1.
 
-![5x5 Gaussian Spatial Filter](outputs/03_gaussian_filter.png)
+![5x5 Gaussian Spatial Filter](outputs/03_gaussian_filter.jpg)
 
 ### 04. 3x3 Median Filter
 
 Nonlinear spatial filter effective against salt-and-pepper noise.
 
-![3x3 Median Filter](outputs/04_median_filter.png)
+![3x3 Median Filter](outputs/04_median_filter.jpg)
 
 ### 05. Laplacian Sharpening Filter
 
 Sharpening using the second spatial derivative.
 
-![Laplacian Sharpening Filter](outputs/05_laplacian_filter.png)
+![Laplacian Sharpening Filter](outputs/05_laplacian_filter.jpg)
 
 ### 06. Sobel Edge Detection Filter
 
 Edge detection using horizontal and vertical gradients.
 
-![Sobel Edge Detection Filter](outputs/06_sobel_filter.png)
+![Sobel Edge Detection Filter](outputs/06_sobel_filter.jpg)
 
 ### 07. High-Boost Sharpening Filter
 
 Detail enhancement using the original image and a blurred mask.
 
-![High-Boost Sharpening Filter](outputs/07_high_boost_filter.png)
+![High-Boost Sharpening Filter](outputs/07_high_boost_filter.jpg)
 
 ### 08. Ideal Low-Pass Filter
 
 Frequency-domain low-pass filtering with a sharp cut-off.
 
-![Ideal Low-Pass Filter](outputs/08_ideal_low_pass_filter.png)
+![Ideal Low-Pass Filter](outputs/08_ideal_low_pass_filter.jpg)
 
 ### 09. Butterworth Low-Pass Filter
 
 Frequency-domain low-pass filtering with order n = 2.
 
-![Butterworth Low-Pass Filter](outputs/09_butterworth_low_pass_filter.png)
+![Butterworth Low-Pass Filter](outputs/09_butterworth_low_pass_filter.jpg)
 
 ### 10. Gaussian Low-Pass Filter
 
 Smooth frequency-domain low-pass response.
 
-![Gaussian Low-Pass Filter](outputs/10_gaussian_low_pass_filter.png)
+![Gaussian Low-Pass Filter](outputs/10_gaussian_low_pass_filter.jpg)
 
 ### 11. Ideal High-Pass Filter
 
 Frequency-domain high-pass filtering with a sharp cut-off.
 
-![Ideal High-Pass Filter](outputs/11_ideal_high_pass_filter.png)
+![Ideal High-Pass Filter](outputs/11_ideal_high_pass_filter.jpg)
 
 ### 12. Butterworth High-Pass Filter
 
 Frequency-domain high-pass filtering with order n = 2.
 
-![Butterworth High-Pass Filter](outputs/12_butterworth_high_pass_filter.png)
+![Butterworth High-Pass Filter](outputs/12_butterworth_high_pass_filter.jpg)
 
 ### 13. Gaussian High-Pass Filter
 
 Smooth frequency-domain high-pass response.
 
-![Gaussian High-Pass Filter](outputs/13_gaussian_high_pass_filter.png)
+![Gaussian High-Pass Filter](outputs/13_gaussian_high_pass_filter.jpg)
 
 ### 14. Huffman Coding
 
 Lossless grayscale image coding with variable-length prefix codes.
 
-![Huffman Coding](outputs/14_huffman_coding.png)
+![Huffman Coding](outputs/14_huffman_coding.jpg)
 
 ### 15. Arithmetic Coding
 
 Lossless arithmetic coding of 4-bit quantized grayscale blocks.
 
-![Arithmetic Coding](outputs/15_arithmetic_coding.png)
+![Arithmetic Coding](outputs/15_arithmetic_coding.jpg)
 
 ## Practical List
 
